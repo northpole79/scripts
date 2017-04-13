@@ -33,7 +33,7 @@ fi
 
 # iteratively search through directories to perform git pull
 # performs a breadth first search (BFS)
-rootdir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+rootdir="$(pwd)"
 dir_queue+=("$rootdir") # insert root path
 dl_queue+=("1") # insert root depth + 1
 while [ "${#dir_queue[@]}" -ne "0" ]
