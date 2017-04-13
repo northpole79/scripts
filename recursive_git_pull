@@ -1,0 +1,67 @@
+#!/bin/bash -e
+
+set -e
+cd /home/tkgil/github
+
+usage() {
+    echo $(cat <<EOF
+recurisive_git_pull --depth <size> | --depth=<size>
+EOF
+	)
+}
+    
+# parse option flags and values
+for option in $@; do
+    shift
+    case $option in
+	"--depth")
+	    depth=$1
+	    ;;
+	"--depth="*)
+	    depth="${option#*=}"
+	    ;;
+	*)
+	    ;;
+    esac
+done
+
+if [ -z $depth ]
+then
+    usage # exit printing format
+    exit 1
+fi
+
+# iteratively search through directories to perform git pull
+# performs a breadth first search (BFS)
+rootdir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+dir_queue+=("$rootdir") # insert root path
+dl_queue+=("1") # insert root depth + 1
+while [ "${#dir_queue[@]}" -ne "0" ]
+do
+    curdirpath="${dir_queue[0]}"
+    curlevel="${dl_queue[0]}"
+    echo "$curdirpath $curlevel"
+    if [ $curlevel -gt $depth ]; then # if depth level of queue exceeds depth then break
+	break
+    fi
+    
+    cd $curdirpath
+    childdir=( $(find . -maxdepth 1 -mindepth 1 -type d -exec basename {} \;) )
+    for curdir in "${childdir[@]}"
+    do
+	cd $curdir
+	curgitdir=$(find . -maxdepth 1 -mindepth 1 -type d -name '.git' -exec basename {} \;)
+	if [ $curgitdir ]; then
+	    echo $curdir
+	    git pull
+	else
+	    dir_queue+=("$curdirpath/$curdir") # push directory queue
+	    nextlevel=$(($curlevel+1))
+	    dl_queue+=("$nextlevel") # push depth level queue
+	fi
+	cd ..
+    done
+    cd $rootdir
+    dir_queue=("${dir_queue[@]:1}") # pop directory queue
+    dl_queue=("${dl_queue[@]:1}") # pop depth level queue
+done
