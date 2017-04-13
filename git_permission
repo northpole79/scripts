@@ -1,0 +1,2 @@
+sudo chown -R $(id -u):$(id -g) "$(git rev-parse --show-toplevel)/.git"
+sudo chown -R $(id -u):$(id -g) "$(git rev-parse --show-toplevel)"
