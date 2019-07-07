@@ -1,7 +1,8 @@
-#!/bin/bash -e
+#!/bin/bash
 
-set -e
-cd $WORK/github
+#set -e
+
+#cd $WORK/github
 
 usage() {
     echo $(cat <<EOF
@@ -51,9 +52,13 @@ do
     do
 	cd $curdir
 	curgitdir=$(find . -maxdepth 1 -mindepth 1 -type d -name '.git' -exec basename {} \;)
+	currepodir=$(find . -maxdepth 1 -mindepth 1 -type d -name '.repo' -exec basename {} \;)
 	if [ $curgitdir ]; then
 	    echo $curdir
 	    git pull
+	elif [ $currepodir ]; then
+	    echo $curdir
+	    repo sync
 	else
 	    dir_queue+=("$curdirpath/$curdir") # push directory queue
 	    nextlevel=$(($curlevel+1))
